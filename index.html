@@ -2,7 +2,19 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Adicionado viewport-fit=cover e user-scalable=no para evitar zoom indesejado e preencher a tela no iPhone -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Meta tags MÁGICAS para transformar em Web App no iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#eff6ff">
+    <meta name="apple-mobile-web-app-title" content="Ohana">
+    
+    <!-- Ícone super fofo que vai aparecer na tela inicial do iPhone -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌺</text></svg>">
+    
     <title>Ohana Planner - UFRGS</title>
     
     <!-- Tailwind CSS para estilização -->
@@ -44,8 +56,29 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        /* Área segura para Modais */
         .modal-overlay {
             backdrop-filter: blur(8px);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Ajustes para iPhone (Notch e Barra Inferior Home) */
+        .app-container {
+            padding-top: calc(1.5rem + env(safe-area-inset-top));
+            padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+        }
+        .safe-bottom-nav {
+            padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+        }
+
+        /* Reset em telas grandes (PCs) */
+        @media (min-width: 768px) {
+            .app-container {
+                padding-top: calc(2.5rem + env(safe-area-inset-top));
+                padding-bottom: 6rem;
+            }
+            .safe-bottom-nav { padding-bottom: 0; }
         }
     </style>
 </head>
@@ -65,7 +98,7 @@
     </div>
 
     <!-- ================= TELA DE LOGIN ================= -->
-    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-50/90 backdrop-blur-md p-4 transition-all duration-500">
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-50/90 backdrop-blur-md p-4 transition-all duration-500" style="padding-bottom: env(safe-area-inset-bottom); padding-top: env(safe-area-inset-top);">
         <div class="bg-white rounded-[2.5rem] p-8 md:p-10 w-full max-w-md shadow-2xl border-4 border-pink-300 relative overflow-hidden">
             <div class="absolute top-0 right-0 p-4 opacity-20 pointer-events-none"><i data-lucide="flower-2" class="text-pink-500 w-24 h-24"></i></div>
             
@@ -112,14 +145,19 @@
     <div id="main-app" class="hidden">
         
         <!-- Main Container -->
-        <div class="max-w-[1200px] mx-auto px-4 md:px-8 pt-6 md:pt-10 pb-32 md:pb-24 relative z-10">
+        <div class="max-w-[1200px] mx-auto px-4 md:px-8 app-container relative z-10">
             
-            <!-- Header (Ajustado para ocupar menos espaço vertical no mobile) -->
+            <!-- Header -->
             <header class="mb-8 md:mb-12 flex flex-col items-center text-center relative">
-                <!-- Logout Button Fofinho -->
-                <button onclick="logout()" class="absolute top-0 right-0 md:top-2 md:right-2 bg-white/80 hover:bg-red-50 text-red-400 hover:text-red-500 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold border-2 border-red-100 shadow-sm backdrop-blur-sm transition-all active:scale-95 flex items-center gap-2">
-                    <span class="hidden md:inline">Sair</span> <i data-lucide="log-out" class="w-4 h-4"></i>
-                </button>
+                <!-- Botões do Topo -->
+                <div class="absolute top-0 right-0 md:top-2 md:right-2 flex gap-2">
+                    <button onclick="document.getElementById('tutorial-modal').classList.remove('hidden')" class="bg-yellow-100/90 hover:bg-yellow-200 text-yellow-600 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold border-2 border-yellow-200 shadow-sm backdrop-blur-sm transition-all active:scale-95 flex items-center gap-1.5">
+                        <i data-lucide="help-circle" class="w-4 h-4"></i> <span class="hidden md:inline">Como Usar</span>
+                    </button>
+                    <button onclick="logout()" class="bg-white/80 hover:bg-red-50 text-red-400 hover:text-red-500 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold border-2 border-red-100 shadow-sm backdrop-blur-sm transition-all active:scale-95 flex items-center gap-1.5">
+                        <span class="hidden md:inline">Sair</span> <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
 
                 <div class="inline-block bg-blue-600 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase mb-3 shadow-lg shadow-blue-500/20 border-2 border-blue-400">
                     Eng. Gestão de Energia
@@ -137,14 +175,54 @@
         </div>
 
         <!-- Fixed Bottom Bar -->
-        <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl rounded-t-[2rem] md:rounded-full shadow-[0_-10px_40px_rgba(0,71,171,0.08)] border-t border-blue-100 z-40 md:sticky md:bottom-6 md:mt-10 md:w-max md:mx-auto md:px-8 md:py-2">
-            <div id="nav-container" class="flex justify-around items-center p-2 md:p-2 md:gap-4 lg:gap-8 max-w-md md:max-w-none mx-auto">
+        <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl rounded-t-[2rem] md:rounded-full shadow-[0_-10px_40px_rgba(0,71,171,0.08)] border-t border-blue-100 z-40 md:sticky md:bottom-6 md:mt-10 md:w-max md:mx-auto md:px-8 md:py-2 safe-bottom-nav">
+            <div id="nav-container" class="flex justify-around items-center pt-2 pb-1 md:p-2 md:gap-4 lg:gap-8 max-w-md md:max-w-none mx-auto">
                 <!-- Botões inseridos via JS -->
             </div>
         </nav>
 
 
         <!-- ================= MODALS ================= -->
+
+        <!-- Modal: Tutorial / Ajuda -->
+        <div id="tutorial-modal" class="hidden fixed inset-0 bg-blue-950/70 modal-overlay flex items-center justify-center p-4 z-[80]">
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-lg shadow-2xl border-4 border-yellow-300 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+                <button onclick="document.getElementById('tutorial-modal').classList.add('hidden')" class="absolute top-4 right-4 p-2 rounded-full transition bg-yellow-50 hover:bg-yellow-100 text-yellow-600">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+                
+                <h3 class="text-2xl font-black text-blue-900 mb-2 flex items-center gap-2">
+                    <i data-lucide="sparkles" class="text-yellow-400 fill-current"></i> Como usar o Ohana!
+                </h3>
+                <p class="text-blue-600 font-bold mb-6">Guia rápido para você dominar seu planner espacial.</p>
+
+                <div class="space-y-5 text-blue-900">
+                    <div class="bg-blue-50 p-4 rounded-2xl border-2 border-blue-100">
+                        <h4 class="font-black flex items-center gap-2 mb-1"><i data-lucide="calendar-heart" class="w-5 h-5 text-blue-500"></i> Missões & Calendário</h4>
+                        <p class="text-sm font-medium">Veja seu mês de relance! As bolinhas coloridas indicam Provas, Trabalhos e Estudos. Adicione novas missões e marque-as como concluídas para limpar a mente.</p>
+                    </div>
+
+                    <div class="bg-pink-50 p-4 rounded-2xl border-2 border-pink-100">
+                        <h4 class="font-black flex items-center gap-2 mb-1"><i data-lucide="layout-list" class="w-5 h-5 text-pink-500"></i> Grade Curricular (Fichário)</h4>
+                        <p class="text-sm font-medium">Clique nos espaços tracejados para adicionar suas cadeiras. <b class="text-pink-600">O Segredo:</b> Se você clicar na matéria já salva, abre o <b>Fichário</b>! Lá você pode salvar links úteis e fazer anotações que salvam sozinhas.</p>
+                    </div>
+
+                    <div class="bg-indigo-50 p-4 rounded-2xl border-2 border-indigo-100">
+                        <h4 class="font-black flex items-center gap-2 mb-1"><i data-lucide="timer" class="w-5 h-5 text-indigo-500"></i> Modo Foco (Pomodoro)</h4>
+                        <p class="text-sm font-medium">Use a aba de Rotina para estudar! São 25 minutos de foco profundo e 5 minutos de pausa. Dê play no timer e coloque a playlist Lofi do Spotify pra tocar direto no app!</p>
+                    </div>
+
+                    <div class="bg-emerald-50 p-4 rounded-2xl border-2 border-emerald-100">
+                        <h4 class="font-black flex items-center gap-2 mb-1"><i data-lucide="wallet" class="w-5 h-5 text-emerald-500"></i> Finanças & Cartão de Crédito</h4>
+                        <p class="text-sm font-medium">Anote tudo que ganha e gasta. Agora, ao escolher <b>Cartão de Crédito</b> como forma de pagamento, você pode adicionar <b>Parcelas</b>! O Ohana Planner já divide o valor e cria as faturas futuras nos próximos meses automaticamente pra você.</p>
+                    </div>
+                </div>
+
+                <button onclick="document.getElementById('tutorial-modal').classList.add('hidden')" class="w-full mt-6 py-4 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 font-black rounded-2xl shadow-lg shadow-yellow-400/30 transition-all active:scale-95 text-lg">
+                    Entendi, partiu! 🚀
+                </button>
+            </div>
+        </div>
 
         <!-- Modal: Item (Missões, Leituras, Estudos) -->
         <div id="item-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 z-[60]">
@@ -248,7 +326,7 @@
 
         <!-- Modal: Finanças -->
         <div id="transaction-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 z-[70]">
-            <div class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4 border-emerald-300">
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4 border-emerald-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-xl md:text-2xl font-black text-emerald-900">Nova Transação 💰</h3>
                     <button onclick="closeModals()" class="text-emerald-400 hover:bg-emerald-50 p-2 rounded-full transition">
@@ -258,23 +336,38 @@
                 
                 <form onsubmit="handleTransactionSubmit(event)" class="space-y-4">
                     <input type="hidden" id="trans-id" name="id">
+                    
+                    <div>
+                        <label class="block text-sm font-bold text-emerald-700 mb-1">Tipo de Transação</label>
+                        <select id="trans-type" name="type" class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                            <option value="expense">Saída / Gasto 📉</option>
+                            <option value="income">Entrada / Receita 📈</option>
+                        </select>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-bold text-emerald-700 mb-1">Tipo</label>
-                            <select id="trans-type" name="type" class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
-                                <option value="expense">Saída 📉</option>
-                                <option value="income">Entrada 📈</option>
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Método</label>
+                            <select id="trans-method" name="method" onchange="toggleInstallments(this.value)" class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                                <option value="money">Dinheiro / Pix / Débito</option>
+                                <option value="credit">Cartão de Crédito 💳</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-bold text-emerald-700 mb-1">Valor (R$)</label>
-                            <input type="number" step="0.01" min="0" id="trans-amount" name="amount" placeholder="0.00" required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Valor Total (R$)</label>
+                            <input type="number" step="0.01" min="0.01" id="trans-amount" name="amount" placeholder="0.00" required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
                         </div>
+                    </div>
+
+                    <div id="installments-div" class="hidden bg-emerald-100/50 p-4 rounded-xl border border-emerald-200">
+                        <label class="block text-sm font-bold text-emerald-800 mb-1"><i data-lucide="credit-card" class="inline w-4 h-4 mb-1"></i> Em quantas vezes?</label>
+                        <input type="number" id="trans-installments" name="installments" value="1" min="1" max="24" class="w-full p-3 rounded-xl bg-white border-2 border-emerald-200 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                        <p class="text-[10px] text-emerald-600 font-bold mt-1.5">O app vai dividir o valor e jogar pras próximas faturas!</p>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-emerald-700 mb-1">Descrição</label>
-                        <input type="text" id="trans-desc" name="description" placeholder="Ex: Lanche RU, Passagem..." required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                        <input type="text" id="trans-desc" name="description" placeholder="Ex: Lanche RU, Tênis novo..." required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
@@ -287,6 +380,7 @@
                                 <option value="Materiais"></option>
                                 <option value="Lazer"></option>
                                 <option value="Mesada/Bolsa"></option>
+                                <option value="Saúde/Beleza"></option>
                                 <option value="Outros"></option>
                             </datalist>
                         </div>
@@ -330,7 +424,7 @@
         let currentUser = null;
         let isLoginMode = true;
         let activeTab = 'calendar';
-        let currentDate = new Date(2026, 2, 1);
+        let currentDate = new Date(); // Inicia no mês atual real
         let activeClassForDetails = null;
 
         let classes = [];
@@ -836,11 +930,18 @@
         }
 
         function getFinanceHTML() {
-            const inc = transactions.filter(t => t.type === 'income').reduce((a, b) => a + Number(b.amount), 0);
-            const exp = transactions.filter(t => t.type === 'expense').reduce((a, b) => a + Number(b.amount), 0);
+            // Filtra o mês atual selecionado na variável global `currentDate`
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const currentMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+            
+            const monthTrans = transactions.filter(t => t.date.startsWith(currentMonthStr));
+
+            const inc = monthTrans.filter(t => t.type === 'income').reduce((a, b) => a + Number(b.amount), 0);
+            const exp = monthTrans.filter(t => t.type === 'expense').reduce((a, b) => a + Number(b.amount), 0);
             const bal = inc - exp;
 
-            const expByCat = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => {
+            const expByCat = monthTrans.filter(t => t.type === 'expense').reduce((acc, curr) => {
                 acc[curr.category] = (acc[curr.category] || 0) + Number(curr.amount);
                 return acc;
             }, {});
@@ -859,16 +960,20 @@
                         <div class="${cols[idx % cols.length]} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${perc}%"></div>
                     </div>
                 </div>`;
-            }).join('') : `<p class="text-center text-emerald-500 font-bold text-sm py-4"><i data-lucide="piggy-bank" class="mx-auto w-8 h-8 opacity-50 mb-2"></i>Nenhuma despesa para categorizar.</p>`;
+            }).join('') : `<p class="text-center text-emerald-500 font-bold text-sm py-4"><i data-lucide="piggy-bank" class="mx-auto w-8 h-8 opacity-50 mb-2"></i>Nenhum gasto neste mês!</p>`;
 
-            let transHtml = transactions.length > 0 ? transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+            let transHtml = monthTrans.length > 0 ? monthTrans.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => {
+                const isCredit = t.method === 'credit';
+                return `
                 <div class="flex justify-between items-center bg-emerald-50/80 p-3 rounded-2xl border-2 border-emerald-100 group transition hover:bg-emerald-100 mb-2">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'income' ? 'bg-emerald-200 text-emerald-700' : 'bg-red-200 text-red-600'}">
                             <i data-lucide="${t.type === 'income' ? 'arrow-up-circle' : 'arrow-down-circle'}" class="w-6 h-6"></i>
                         </div>
                         <div>
-                            <div class="font-bold text-sm text-emerald-900 leading-tight">${t.description}</div>
+                            <div class="font-bold text-sm text-emerald-900 leading-tight flex items-center gap-1">
+                                ${t.description} ${isCredit ? '<i data-lucide="credit-card" class="w-3 h-3 text-emerald-600"></i>' : ''}
+                            </div>
                             <div class="text-[10px] text-emerald-600 font-bold mt-0.5">${t.date.split('-').reverse().join('/')} • ${t.category}</div>
                         </div>
                     </div>
@@ -877,18 +982,28 @@
                         <button onclick="deleteTransaction('${t.id}')" class="text-red-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-600 p-1.5 bg-red-50 rounded-lg transition active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                 </div>
-            `).join('') : '<p class="text-center text-emerald-500 font-bold text-sm py-6">Sem movimentações recentes.</p>';
+            `;
+            }).join('') : '<p class="text-center text-emerald-500 font-bold text-sm py-6">Sem movimentações para este mês.</p>';
 
             return `
             <div class="max-w-5xl mx-auto space-y-6">
                 
+                <!-- Controle de Mês -->
+                <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 md:p-6 shadow-xl border-2 border-emerald-200 flex justify-between items-center text-emerald-900">
+                    <button onclick="changeMonth(-1)" class="p-2 md:p-3 bg-emerald-100 rounded-full hover:bg-emerald-200 transition text-emerald-700 active:scale-95"><i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+                    <h2 class="text-xl md:text-2xl font-black flex items-center gap-2 text-emerald-800 tracking-tight">
+                        ${monthNames[month]} ${year}
+                    </h2>
+                    <button onclick="changeMonth(1)" class="p-2 md:p-3 bg-emerald-100 rounded-full hover:bg-emerald-200 transition text-emerald-700 active:scale-95"><i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+                </div>
+
                 <!-- Cards Resumo -->
                 <div class="bg-gradient-to-br from-emerald-100 to-teal-50 rounded-3xl p-5 shadow-lg border-2 border-emerald-200 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none"><i data-lucide="gem" class="w-24 h-24 text-emerald-900 fill-current"></i></div>
-                    <h2 class="text-xl font-black text-emerald-900 mb-4 flex items-center gap-2 relative z-10">💎 Tesouro Galáctico</h2>
+                    <h2 class="text-xl font-black text-emerald-900 mb-4 flex items-center gap-2 relative z-10">💎 Saldo do Mês</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10">
                         <div class="bg-white/90 p-4 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center justify-center">
-                            <span class="text-emerald-500 font-black text-[10px] uppercase tracking-wider mb-1">Saldo Atual</span>
+                            <span class="text-emerald-500 font-black text-[10px] uppercase tracking-wider mb-1">Restante</span>
                             <span class="text-2xl font-black ${bal >= 0 ? 'text-emerald-600' : 'text-red-500'}">${formatCurrency(bal)}</span>
                         </div>
                         <div class="bg-white/90 p-4 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
@@ -912,7 +1027,7 @@
                     <!-- Extrato -->
                     <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 md:p-6 shadow-xl border-2 border-emerald-200 flex flex-col">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-base font-black text-emerald-900 flex items-center gap-2"><i data-lucide="receipt" class="text-emerald-500 w-5 h-5"></i> Extrato</h3>
+                            <h3 class="text-base font-black text-emerald-900 flex items-center gap-2"><i data-lucide="receipt" class="text-emerald-500 w-5 h-5"></i> Extrato de ${monthNames[month]}</h3>
                         </div>
                         <div class="flex-1 overflow-y-auto max-h-[250px] custom-scrollbar pr-1 mb-4">${transHtml}</div>
                         
@@ -946,6 +1061,17 @@
                 circ.style.strokeDashoffset = `${289 * (1 - timeLeft / total)}%`;
             }
         }
+
+        // Exibe ou oculta opções de parcelamento
+        window.toggleInstallments = (val) => {
+            const div = document.getElementById('installments-div');
+            if (val === 'credit') {
+                div.classList.remove('hidden');
+            } else {
+                div.classList.add('hidden');
+                document.getElementById('trans-installments').value = 1;
+            }
+        };
 
         // --- FIRESTORE DATA MUTATIONS ---
         const getBaseRef = () => `artifacts/${appId}/users/${currentUser.uid}`;
@@ -982,6 +1108,7 @@
             document.getElementById('class-modal').classList.add('hidden');
             document.getElementById('class-details-modal').classList.add('hidden');
             document.getElementById('transaction-modal').classList.add('hidden');
+            document.getElementById('tutorial-modal').classList.add('hidden');
             activeClassForDetails = null;
         };
 
@@ -1310,17 +1437,55 @@
             if(!currentUser) return;
             const form = e.target;
             
-            const transData = {
-                type: form.type.value,
-                amount: parseFloat(form.amount.value.replace(',', '.')),
-                category: form.category.value,
-                description: form.description.value,
-                date: form.date.value
-            };
+            const type = form.type.value;
+            const amount = parseFloat(form.amount.value.replace(',', '.'));
+            const category = form.category.value;
+            const desc = form.description.value;
+            const date = form.date.value;
+            const method = form.method ? form.method.value : 'money';
+            const installments = method === 'credit' ? parseInt(form.installments.value || 1) : 1;
 
             try {
-                await addDoc(collection(db, `${getBaseRef()}/transactions`), transData);
+                // Se for mais de 1 parcela (normalmente apenas pra saída, mas a regra se aplica ao valor total)
+                if (installments > 1 && type === 'expense') {
+                    const instAmount = amount / installments;
+                    let [y, m, d] = date.split('-');
+
+                    // Array para disparar tudo ao mesmo tempo para o firebase ficar mais rapido
+                    let promises = [];
+
+                    for (let i = 0; i < installments; i++) {
+                        let mNum = parseInt(m) - 1 + i;
+                        let newY = parseInt(y) + Math.floor(mNum / 12);
+                        let newM = (mNum % 12) + 1;
+                        let newDateStr = `${newY}-${String(newM).padStart(2, '0')}-${d}`;
+
+                        const transData = {
+                            type: type,
+                            amount: instAmount,
+                            category: category,
+                            description: `${desc} (Parc. ${i+1}/${installments})`,
+                            date: newDateStr,
+                            method: method
+                        };
+                        promises.push(addDoc(collection(db, `${getBaseRef()}/transactions`), transData));
+                    }
+                    await Promise.all(promises);
+                } else {
+                    // Transação normal à vista (ou entrada)
+                    const transData = {
+                        type: type,
+                        amount: amount,
+                        category: category,
+                        description: desc,
+                        date: date,
+                        method: method
+                    };
+                    await addDoc(collection(db, `${getBaseRef()}/transactions`), transData);
+                }
+
                 form.reset();
+                document.getElementById('installments-div').classList.add('hidden');
                 closeModals();
             } catch(err) { console.error(err); }
         };
