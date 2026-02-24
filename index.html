@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohana Planner - UFRGS</title>
+    
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Fonte fofa (Nunito) -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Scrollbars Fofinhas */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(219, 234, 254, 0.4);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(147, 197, 253, 0.8);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(96, 165, 250, 1);
+        }
+
+        /* Animações e Transições */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-pink-200 text-blue-900 relative bg-blue-50/50">
+
+    <!-- CUTE BACKGROUND PATTERN -->
+    <div class="fixed inset-0 z-0 pointer-events-none opacity-[0.03]" 
+        style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M54.627 0l.83.83-54.627 54.627-.83-.83L54.627 0zM0 54.627l.83-.83 54.627 54.627-.83.83L0 54.627zM54.627 60L60 54.627l-.83-.83-54.627 54.627.83.83zM0 5.373L5.373 0l.83.83L0 6.203-.83 5.373z\' fill=\'%230047AB\' fill-opacity=\'1\' fill-rule=\'evenodd\'/%3E%3C/svg%3E');">
+    </div>
+
+    <!-- Emojis Decorativos de Fundo (Ajustados para não atrapalhar) -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20 z-0">
+        <div class="absolute top-10 left-4 md:left-10 text-5xl md:text-6xl drop-shadow-md">🌺</div>
+        <div class="absolute top-40 right-4 md:right-20 text-4xl md:text-5xl drop-shadow-md">🌴</div>
+        <div class="absolute bottom-40 left-4 md:left-20 text-6xl md:text-7xl drop-shadow-md">🌊</div>
+        <div class="absolute top-1/2 right-6 md:right-10 text-3xl md:text-4xl drop-shadow-md">🐾</div>
+    </div>
+
+    <!-- ================= TELA DE LOGIN ================= -->
+    <div id="auth-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-blue-50/90 backdrop-blur-md p-4 transition-all duration-500">
+        <div class="bg-white rounded-[2.5rem] p-8 md:p-10 w-full max-w-md shadow-2xl border-4 border-pink-300 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-20 pointer-events-none"><i data-lucide="flower-2" class="text-pink-500 w-24 h-24"></i></div>
+            
+            <div class="text-center mb-8 relative z-10">
+                <div class="inline-block bg-pink-100 text-pink-600 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase mb-3">
+                    Bem-vinda
+                </div>
+                <h1 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-700 to-pink-500 mb-2">
+                    Ohana Planner
+                </h1>
+                <p class="text-blue-500 font-bold text-sm" id="auth-subtitle">Faça login para acessar suas missões!</p>
+            </div>
+
+            <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4 relative z-10">
+                <div id="auth-error" class="hidden bg-red-100 text-red-600 text-sm font-bold p-3 rounded-xl text-center mb-4"></div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-blue-700 mb-1">E-mail</label>
+                    <input type="email" id="auth-email" required class="w-full p-3 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-medium transition-colors">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-blue-700 mb-1">Senha</label>
+                    <input type="password" id="auth-password" required minlength="6" class="w-full p-3 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-medium transition-colors">
+                </div>
+                
+                <button type="submit" id="auth-submit-btn" class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 text-lg mt-6 flex items-center justify-center gap-2">
+                    Entrar <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </button>
+            </form>
+
+            <div class="mt-6 text-center relative z-10">
+                <p class="text-sm font-bold text-blue-400">
+                    <span id="auth-toggle-text">Ainda não tem conta?</span> 
+                    <button type="button" onclick="toggleAuthMode()" class="text-pink-500 hover:text-pink-600 underline ml-1 active:scale-95 transition-transform">
+                        <span id="auth-toggle-btn">Criar agora</span>
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ================= APP PRINCIPAL ================= -->
+    <div id="main-app" class="hidden">
+        
+        <!-- Main Container -->
+        <div class="max-w-[1200px] mx-auto px-4 md:px-8 pt-6 md:pt-10 pb-32 md:pb-24 relative z-10">
+            
+            <!-- Header (Ajustado para ocupar menos espaço vertical no mobile) -->
+            <header class="mb-8 md:mb-12 flex flex-col items-center text-center relative">
+                <!-- Logout Button Fofinho -->
+                <button onclick="logout()" class="absolute top-0 right-0 md:top-2 md:right-2 bg-white/80 hover:bg-red-50 text-red-400 hover:text-red-500 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-bold border-2 border-red-100 shadow-sm backdrop-blur-sm transition-all active:scale-95 flex items-center gap-2">
+                    <span class="hidden md:inline">Sair</span> <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
+
+                <div class="inline-block bg-blue-600 text-white px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase mb-3 shadow-lg shadow-blue-500/20 border-2 border-blue-400">
+                    Eng. Gestão de Energia
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-700 via-blue-500 to-pink-500 drop-shadow-sm mb-2 flex items-center justify-center gap-2 md:gap-4 tracking-tight leading-tight">
+                    Ohana Planner <i data-lucide="star" class="text-yellow-400 fill-current w-8 h-8 md:w-10 md:h-10"></i>
+                </h1>
+                <p class="text-blue-600 font-bold bg-white/70 px-4 py-1.5 rounded-full text-xs md:text-sm border-2 border-blue-100 shadow-sm backdrop-blur-sm">UFRGS • Semestre 2026/1</p>
+            </header>
+
+            <!-- Dynamic Content Area -->
+            <main id="app-content" class="fade-in">
+                <!-- Renderizado via JS -->
+            </main>
+        </div>
+
+        <!-- Fixed Bottom Bar -->
+        <nav class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl rounded-t-[2rem] md:rounded-full shadow-[0_-10px_40px_rgba(0,71,171,0.08)] border-t border-blue-100 z-40 md:sticky md:bottom-6 md:mt-10 md:w-max md:mx-auto md:px-8 md:py-2">
+            <div id="nav-container" class="flex justify-around items-center p-2 md:p-2 md:gap-4 lg:gap-8 max-w-md md:max-w-none mx-auto">
+                <!-- Botões inseridos via JS -->
+            </div>
+        </nav>
+
+
+        <!-- ================= MODALS ================= -->
+
+        <!-- Modal: Item (Missões, Leituras, Estudos) -->
+        <div id="item-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 z-[60]">
+            <div id="item-modal-box" class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="item-modal-title" class="text-xl md:text-2xl font-black text-blue-900"></h3>
+                    <button onclick="closeModals()" class="p-2 rounded-full transition bg-blue-50 hover:bg-pink-100 text-blue-400 hover:text-pink-500">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <form id="item-form" onsubmit="handleItemSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="item-type" name="type">
+                    <input type="hidden" id="item-id" name="id">
+                    <input type="hidden" id="item-classId" name="classId">
+
+                    <div id="field-date" class="hidden">
+                        <label class="block text-sm font-bold mb-1 text-blue-700">Data</label>
+                        <input type="date" id="item-date" name="date" class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900 transition-colors">
+                    </div>
+
+                    <div>
+                        <label id="field-title-label" class="block text-sm font-bold mb-1 text-blue-700">O que é?</label>
+                        <input type="text" id="item-title" name="title" required placeholder="Ex: Lista de Exercícios" class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900 transition-colors">
+                    </div>
+
+                    <div id="field-taskType" class="hidden">
+                        <label class="block text-sm font-bold mb-1 text-blue-700">Tipo</label>
+                        <select id="item-taskType" name="taskType" class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900 transition-colors">
+                            <option value="prova">Prova 📝</option>
+                            <option value="trabalho">Trabalho 📂</option>
+                            <option value="estudo">Dia de Estudo 📚</option>
+                        </select>
+                    </div>
+
+                    <div id="field-subject" class="hidden">
+                        <label class="block text-sm font-bold mb-1 text-blue-700">Matéria</label>
+                        <input type="text" id="item-subject" name="subject" placeholder="Ex: Física II" class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900 transition-colors">
+                    </div>
+
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" id="item-delete-btn" onclick="handleItemDelete()" class="hidden flex-1 py-4 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i> Excluir
+                        </button>
+                        <button type="submit" id="item-save-btn" class="flex-[2] py-4 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 text-lg">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Configuração da Aula -->
+        <div id="class-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 z-[70]">
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4 border-blue-300">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="class-modal-title" class="text-xl md:text-2xl font-black text-blue-900">Nova Aula 🌺</h3>
+                    <button onclick="closeModals()" class="text-blue-400 hover:bg-blue-50 p-2 rounded-full transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <form onsubmit="handleClassSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="class-id" name="id">
+                    <input type="hidden" id="class-day" name="day">
+                    <input type="hidden" id="class-shift" name="shift">
+
+                    <div class="flex gap-2 mb-4">
+                        <span id="class-day-badge" class="bg-blue-100 text-blue-700 text-sm font-bold px-4 py-1.5 rounded-full border border-blue-200"></span>
+                        <span id="class-shift-badge" class="bg-pink-100 text-pink-700 text-sm font-bold px-4 py-1.5 rounded-full border border-pink-200"></span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-blue-700 mb-1">Cadeira / Disciplina</label>
+                        <input type="text" id="class-subject" name="subject" placeholder="Ex: Cálculo B" required class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 text-blue-900 outline-none focus:border-pink-400 font-bold transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-blue-700 mb-1">Horário (Opcional)</label>
+                        <input type="text" id="class-time" name="time" placeholder="Ex: 08:30 - 10:10" class="w-full p-3 md:p-4 rounded-xl bg-blue-50 border-2 border-blue-100 text-blue-900 outline-none focus:border-pink-400 font-bold transition-colors">
+                    </div>
+
+                    <div class="flex gap-3 mt-8">
+                        <button type="button" id="class-delete-btn" onclick="handleClassDelete()" class="hidden flex-1 py-4 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-2xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                            Excluir
+                        </button>
+                        <button type="submit" class="flex-[2] py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95 text-lg">
+                            Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal: Detalhes da Disciplina -->
+        <div id="class-details-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 md:p-8 z-[50]">
+            <div id="class-details-content" class="bg-white rounded-[2rem] w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl border-4 border-pink-300 overflow-hidden">
+                <!-- Renderizado via JS -->
+            </div>
+        </div>
+
+        <!-- Modal: Finanças -->
+        <div id="transaction-modal" class="hidden fixed inset-0 bg-blue-950/60 modal-overlay flex items-center justify-center p-4 z-[70]">
+            <div class="bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4 border-emerald-300">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl md:text-2xl font-black text-emerald-900">Nova Transação 💰</h3>
+                    <button onclick="closeModals()" class="text-emerald-400 hover:bg-emerald-50 p-2 rounded-full transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <form onsubmit="handleTransactionSubmit(event)" class="space-y-4">
+                    <input type="hidden" id="trans-id" name="id">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Tipo</label>
+                            <select id="trans-type" name="type" class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                                <option value="expense">Saída 📉</option>
+                                <option value="income">Entrada 📈</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Valor (R$)</label>
+                            <input type="number" step="0.01" min="0" id="trans-amount" name="amount" placeholder="0.00" required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-emerald-700 mb-1">Descrição</label>
+                        <input type="text" id="trans-desc" name="description" placeholder="Ex: Lanche RU, Passagem..." required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Categoria</label>
+                            <input type="text" id="trans-cat" name="category" list="categories" placeholder="Alimentação" required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                            <datalist id="categories">
+                                <option value="Alimentação"></option>
+                                <option value="Transporte"></option>
+                                <option value="Materiais"></option>
+                                <option value="Lazer"></option>
+                                <option value="Mesada/Bolsa"></option>
+                                <option value="Outros"></option>
+                            </datalist>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-emerald-700 mb-1">Data</label>
+                            <input type="date" id="trans-date" name="date" required class="w-full p-3 rounded-xl bg-emerald-50 border-2 border-emerald-100 text-emerald-900 outline-none focus:border-emerald-400 font-bold transition-colors">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/30 transition-all active:scale-95 text-lg mt-6">
+                        Salvar Transação
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= LOGIC (Module JS com Firebase) ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb_z5C3rWiq2dlpijI2n2EL_G3F41A_eI",
+            authDomain: "plannerdamari-a0da3.firebaseapp.com",
+            projectId: "plannerdamari-a0da3",
+            storageBucket: "plannerdamari-a0da3.firebasestorage.app",
+            messagingSenderId: "812994967107",
+            appId: "1:812994967107:web:efef512db9f257791246f6",
+            measurementId: "G-KBMVWNXPWQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'planner-da-mari';
+
+        // --- GLOBAL STATE ---
+        let currentUser = null;
+        let isLoginMode = true;
+        let activeTab = 'calendar';
+        let currentDate = new Date(2026, 2, 1);
+        let activeClassForDetails = null;
+
+        let classes = [];
+        let tasks = [];
+        let readings = [];
+        let extraStudies = [];
+        let transactions = [];
+
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+        let timerMode = 'work';
+        let timerInterval = null;
+
+        // --- HELPER FUNCTIONS ---
+        const today = new Date();
+        const getRealTodayString = () => [today.getFullYear(), String(today.getMonth() + 1).padStart(2, '0'), String(today.getDate()).padStart(2, '0')].join('-');
+        const formatCurrency = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        const formatTimer = (seconds) => {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        };
+        const daysOfWeekList = ['Dom', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sáb'];
+        const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        // --- AUTH LOGIC ---
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-subtitle').innerText = isLoginMode ? 'Faça login para acessar suas missões!' : 'Crie sua conta para planejar seu semestre!';
+            document.getElementById('auth-submit-btn').innerHTML = isLoginMode ? 'Entrar <i data-lucide="sparkles" class="w-5 h-5"></i>' : 'Criar Conta <i data-lucide="star" class="w-5 h-5"></i>';
+            document.getElementById('auth-toggle-text').innerText = isLoginMode ? 'Ainda não tem conta?' : 'Já possui uma conta?';
+            document.getElementById('auth-toggle-btn').innerText = isLoginMode ? 'Criar agora' : 'Fazer Login';
+            document.getElementById('auth-error').classList.add('hidden');
+            lucide.createIcons();
+        };
+
+        window.handleAuth = async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-password').value;
+            const errorDiv = document.getElementById('auth-error');
+            const btn = document.getElementById('auth-submit-btn');
+            
+            errorDiv.classList.add('hidden');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, pass);
+                }
+            } catch (error) {
+                console.error(error);
+                errorDiv.innerText = isLoginMode ? 'Ops! E-mail ou senha incorretos.' : 'Erro ao criar conta. Tente uma senha maior.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        };
+
+        window.logout = async () => {
+            await signOut(auth);
+        };
+
+        let unsubscribes = [];
+        onAuthStateChanged(auth, (user) => {
+            const authScreen = document.getElementById('auth-screen');
+            const mainApp = document.getElementById('main-app');
+            
+            if (user) {
+                currentUser = user;
+                authScreen.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                initApp();
+                setupFirestoreListeners(user);
+            } else {
+                currentUser = null;
+                authScreen.classList.remove('hidden');
+                mainApp.classList.add('hidden');
+                classes = []; tasks = []; readings = []; extraStudies = []; transactions = [];
+                unsubscribes.forEach(unsub => unsub());
+                unsubscribes = [];
+            }
+        });
+
+        function setupFirestoreListeners(user) {
+            const baseRef = `artifacts/${appId}/users/${user.uid}`;
+            unsubscribes.push(onSnapshot(collection(db, `${baseRef}/tasks`), (snap) => { tasks = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUIAfterDataChange(); }));
+            unsubscribes.push(onSnapshot(collection(db, `${baseRef}/classes`), (snap) => { classes = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUIAfterDataChange(); }));
+            unsubscribes.push(onSnapshot(collection(db, `${baseRef}/readings`), (snap) => { readings = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUIAfterDataChange(); }));
+            unsubscribes.push(onSnapshot(collection(db, `${baseRef}/studies`), (snap) => { extraStudies = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUIAfterDataChange(); }));
+            unsubscribes.push(onSnapshot(collection(db, `${baseRef}/transactions`), (snap) => { transactions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })); updateUIAfterDataChange(); }));
+        }
+
+        function updateUIAfterDataChange() {
+            renderApp();
+            if (activeClassForDetails) {
+                const updatedClass = classes.find(c => c.id === activeClassForDetails.id);
+                if (updatedClass) {
+                    activeClassForDetails = updatedClass;
+                    openClassDetails(updatedClass.id);
+                } else {
+                    closeModals();
+                }
+            }
+        }
+
+        function initApp() {
+            renderNav();
+            renderApp();
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (isRunning && timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerUI();
+                } else if (isRunning && timeLeft === 0) {
+                    isRunning = false;
+                    timerMode = timerMode === 'work' ? 'break' : 'work';
+                    timeLeft = timerMode === 'work' ? 25 * 60 : 5 * 60;
+                    updateTimerUI();
+                    renderApp();
+                }
+            }, 1000);
+        }
+
+        window.switchTab = (tabId) => {
+            activeTab = tabId;
+            renderNav();
+            renderApp();
+        };
+
+        function renderNav() {
+            const tabs = [
+                { id: 'calendar', icon: 'calendar-heart', label: 'Geral', color: 'blue' },
+                { id: 'schedule', icon: 'layout-list', label: 'Horário', color: 'blue' },
+                { id: 'tasks', icon: 'book-open', label: 'Missões', color: 'pink' },
+                { id: 'routine', icon: 'timer', label: 'Rotina', color: 'blue' },
+                { id: 'finance', icon: 'wallet', label: 'Finanças', color: 'emerald' }
+            ];
+
+            const navContainer = document.getElementById('nav-container');
+            let html = '';
+            
+            tabs.forEach(tab => {
+                const isActive = activeTab === tab.id;
+                let activeColor = 'text-blue-600';
+                let bgActive = 'bg-blue-100';
+                let hoverColor = 'hover:text-blue-500 hover:bg-blue-50';
+
+                if (tab.color === 'pink') { activeColor = 'text-pink-500'; bgActive = 'bg-pink-100'; hoverColor = 'hover:text-pink-500 hover:bg-pink-50'; }
+                if (tab.color === 'emerald') { activeColor = 'text-emerald-500'; bgActive = 'bg-emerald-100'; hoverColor = 'hover:text-emerald-500 hover:bg-emerald-50'; }
+
+                html += `
+                    <button onclick="switchTab('${tab.id}')" class="flex flex-col items-center justify-center w-[60px] h-[56px] md:w-20 md:h-16 rounded-2xl transition-all duration-300 relative ${isActive ? activeColor + ' scale-110' : 'text-blue-300 ' + hoverColor}">
+                        ${isActive ? `<span class="absolute inset-0 ${bgActive} rounded-2xl -z-10"></span>` : ''}
+                        <i data-lucide="${tab.icon}" class="mb-0.5 w-6 h-6 md:w-7 md:h-7 ${isActive ? 'stroke-[2.5]' : ''}"></i>
+                        <span class="text-[9px] md:text-xs font-bold ${isActive ? 'opacity-100' : 'opacity-70'} truncate px-1">${tab.label}</span>
+                    </button>
+                `;
+            });
+            navContainer.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        function renderApp() {
+            const container = document.getElementById('app-content');
+            if (activeTab === 'calendar') container.innerHTML = getCalendarHTML();
+            else if (activeTab === 'schedule') container.innerHTML = getScheduleHTML();
+            else if (activeTab === 'tasks') container.innerHTML = getTasksHTML();
+            else if (activeTab === 'routine') container.innerHTML = getRoutineHTML();
+            else if (activeTab === 'finance') container.innerHTML = getFinanceHTML();
+
+            lucide.createIcons();
+            if (activeTab === 'routine') updateTimerUI();
+        }
+
+        // --- RENDERERS ---
+
+        function getCalendarHTML() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+
+            let cellsHtml = '';
+            for (let i = 0; i < firstDay; i++) {
+                cellsHtml += `<div class="h-16 md:h-24 border-2 border-transparent"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const d = new Date(year, month, day);
+                const dateStr = [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+                const dayTasks = tasks.filter(t => t.date === dateStr);
+                const isToday = dateStr === getRealTodayString();
+
+                let dotsHtml = dayTasks.map(t => {
+                    let color = t.completed ? 'bg-green-400 opacity-70' : (t.type === 'prova' ? 'bg-pink-500' : (t.type === 'trabalho' ? 'bg-purple-500' : 'bg-blue-500'));
+                    return `<div class="w-1.5 h-1.5 md:w-full md:h-auto md:px-1.5 md:py-0.5 rounded-full md:rounded-md text-[0px] md:text-[10px] md:font-bold md:truncate md:text-white ${color}" title="${t.title}"><span class="hidden md:inline">${t.title}</span></div>`;
+                }).join('');
+
+                cellsHtml += `
+                    <div onclick="openItemModal('task', null, '${dateStr}')" class="h-16 md:h-24 rounded-2xl p-1.5 flex flex-col items-center justify-start cursor-pointer transition-all border-2 ${isToday ? 'bg-blue-500 border-blue-600 shadow-md transform scale-105' : 'bg-white border-blue-100 hover:border-pink-300 hover:bg-pink-50'}">
+                        <span class="text-xs md:text-sm font-black ${isToday ? 'text-white' : 'text-blue-900'}">${day}</span>
+                        <div class="flex flex-wrap gap-1 mt-1 justify-center px-1 w-full overflow-hidden">${dotsHtml}</div>
+                    </div>
+                `;
+            }
+
+            // Resumo do Mês
+            const currentMonthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+            const monthTasks = tasks.filter(t => t.date.startsWith(currentMonthStr)).sort((a,b) => a.date.localeCompare(b.date));
+
+            let monthSummaryHtml = '';
+            if (monthTasks.length > 0) {
+                monthSummaryHtml = monthTasks.map(t => {
+                    const dayStr = t.date.split('-')[2];
+                    const isProva = t.type === 'prova';
+                    const isTrabalho = t.type === 'trabalho';
+                    const badgeColor = t.completed ? 'bg-gray-100 text-gray-400' : (isProva ? 'bg-pink-100 text-pink-600' : (isTrabalho ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600'));
+                    const typeLabel = isProva ? 'Prova 📝' : (isTrabalho ? 'Trabalho 📂' : 'Estudo 📚');
+
+                    return `
+                    <div class="flex items-center gap-3 bg-white p-3 md:p-4 rounded-2xl border-2 border-blue-50 shadow-sm mb-3 transition-all ${t.completed ? 'opacity-60 grayscale-[30%]' : 'hover:border-pink-200 hover:shadow-md'}">
+                        <div class="flex flex-col items-center justify-center bg-blue-50 rounded-xl w-12 h-12 md:w-14 md:h-14 shrink-0 border-2 border-blue-100">
+                            <span class="text-[10px] md:text-xs font-black text-blue-400 uppercase leading-none mb-0.5">${monthNames[month].substring(0,3)}</span>
+                            <span class="text-base md:text-xl font-black text-blue-800 leading-none">${dayStr}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-blue-900 truncate text-sm md:text-base ${t.completed ? 'line-through text-blue-400' : ''}">${t.title}</div>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] md:text-xs font-black px-2 py-0.5 rounded-md ${badgeColor} uppercase tracking-wider">${typeLabel}</span>
+                            </div>
+                        </div>
+                        <button onclick="toggleItem('task', '${t.id}')" class="shrink-0 p-2 text-blue-300 hover:text-green-500 transition active:scale-90">
+                            <i data-lucide="${t.completed ? 'check-circle-2' : 'circle'}" class="w-6 h-6 md:w-7 md:h-7 ${t.completed ? 'text-green-500' : ''}"></i>
+                        </button>
+                    </div>
+                    `;
+                }).join('');
+            } else {
+                monthSummaryHtml = `<div class="text-center text-blue-400 text-sm py-8 font-bold bg-white/50 rounded-2xl border-2 border-dashed border-blue-100">Nenhuma missão para este mês! 🏖️</div>`;
+            }
+
+            return `
+            <div class="max-w-4xl mx-auto space-y-6">
+                <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 md:p-6 shadow-xl border-2 border-blue-200">
+                    <div class="flex justify-between items-center mb-6 text-blue-900 px-2">
+                        <button onclick="changeMonth(-1)" class="p-2 md:p-3 bg-blue-100 rounded-full hover:bg-pink-100 hover:text-pink-500 transition text-blue-600 active:scale-95"><i data-lucide="chevron-left" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+                        <h2 class="text-xl md:text-2xl font-black flex items-center gap-2 text-blue-800 tracking-tight">
+                            <i data-lucide="star" class="text-pink-400 fill-current w-5 h-5"></i> ${monthNames[month]} ${year} <i data-lucide="star" class="text-pink-400 fill-current w-5 h-5"></i>
+                        </h2>
+                        <button onclick="changeMonth(1)" class="p-2 md:p-3 bg-blue-100 rounded-full hover:bg-pink-100 hover:text-pink-500 transition text-blue-600 active:scale-95"><i data-lucide="chevron-right" class="w-5 h-5 md:w-6 md:h-6"></i></button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 md:gap-3 mb-2">
+                        ${['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => `<div class="text-center text-[10px] md:text-xs font-bold text-blue-400 uppercase tracking-wider">${d}</div>`).join('')}
+                    </div>
+                    <div class="grid grid-cols-7 gap-1 md:gap-2">${cellsHtml}</div>
+                </div>
+
+                <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 md:p-8 shadow-xl border-2 border-blue-200">
+                    <h3 class="text-lg md:text-xl font-black text-blue-900 mb-4 flex items-center gap-2 border-b-2 border-blue-50 pb-2">
+                        <i data-lucide="list-todo" class="text-pink-500 w-6 h-6"></i> Resumo de ${monthNames[month]}
+                    </h3>
+                    <div class="max-h-[350px] overflow-y-auto custom-scrollbar pr-2 mb-2">
+                        ${monthSummaryHtml}
+                    </div>
+                </div>
+                
+                <!-- Botão fofo sem ser FAB -->
+                <button onclick="openItemModal('task', null, '${getRealTodayString()}')" class="w-full py-4 border-4 border-dashed border-blue-300 bg-blue-50/50 hover:bg-pink-50 text-blue-600 hover:border-pink-300 hover:text-pink-500 rounded-3xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 text-lg shadow-sm">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i> Nova Missão
+                </button>
+            </div>`;
+        }
+
+        window.changeMonth = (delta) => {
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1);
+            renderApp();
+        };
+
+        function getScheduleHTML() {
+            const shifts = ['Manhã', 'Tarde', 'Noite'];
+            let html = `
+            <div class="bg-white/90 backdrop-blur-md rounded-3xl p-4 md:p-8 shadow-xl border-2 border-blue-200 overflow-x-auto custom-scrollbar">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2 min-w-[600px]">
+                    <h2 class="text-2xl font-black text-blue-900 flex items-center gap-2">
+                        Grade Curricular <i data-lucide="flower-2" class="text-pink-500 w-7 h-7"></i>
+                    </h2>
+                    <span class="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1.5 rounded-full border border-blue-200">Clique nas caixinhas!</span>
+                </div>
+                <div class="min-w-[600px]">
+                    <div class="grid grid-cols-6 gap-2 mb-3">
+                        <div class="text-center font-bold text-blue-400 py-2 text-xs uppercase">Turno</div>
+                        ${['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'].map(d => `<div class="text-center font-bold text-blue-800 bg-blue-100/50 rounded-xl py-2 text-sm border-2 border-blue-100 shadow-sm">${d}</div>`).join('')}
+                    </div>
+            `;
+
+            shifts.forEach(shift => {
+                let icon = shift === 'Manhã' ? '<i data-lucide="coffee" class="mb-1 text-orange-400 w-6 h-6"></i>' : (shift === 'Tarde' ? '<i data-lucide="sun" class="mb-1 text-yellow-500 w-6 h-6"></i>' : '<i data-lucide="moon" class="mb-1 text-indigo-500 w-6 h-6"></i>');
+                html += `
+                <div class="grid grid-cols-6 gap-2 mb-3">
+                    <div class="flex flex-col items-center justify-center font-bold text-blue-700 bg-blue-50/80 rounded-2xl p-2 h-24 md:h-28 border-2 border-blue-100 text-xs">
+                        ${icon}${shift}
+                    </div>
+                `;
+
+                [1, 2, 3, 4, 5].forEach(dayIdx => {
+                    const shiftClasses = classes.filter(c => c.day === dayIdx && c.shift === shift);
+                    if (shiftClasses.length > 0) {
+                        html += `<div class="rounded-2xl p-1 h-24 md:h-28 flex flex-col gap-1 overflow-y-auto custom-scrollbar">`;
+                        shiftClasses.forEach(c => {
+                            html += `
+                            <div onclick="openClassDetails('${c.id}')" class="bg-white border-l-4 border-pink-400 rounded-xl p-2 text-xs shadow-sm cursor-pointer hover:shadow-md hover:bg-pink-50 transition-all border-y-2 border-r-2 border-blue-50 shrink-0">
+                                <div class="font-bold text-blue-900 line-clamp-2 leading-tight">${c.subject}</div>
+                                <div class="text-blue-500 font-bold mt-1 text-[9px] bg-blue-50 inline-block px-1.5 py-0.5 rounded-md">${c.time || '--:--'}</div>
+                            </div>`;
+                        });
+                        html += `</div>`;
+                    } else {
+                        html += `
+                        <div onclick="openClassConfigModal(null, ${dayIdx}, '${shift}')" class="rounded-2xl h-24 md:h-28 border-4 border-dashed border-blue-100 bg-blue-50/30 hover:bg-pink-50 hover:border-pink-200 flex flex-col items-center justify-center cursor-pointer transition-all group">
+                            <i data-lucide="plus" class="text-blue-300 group-hover:text-pink-400 w-6 h-6 mb-1"></i>
+                        </div>`;
+                    }
+                });
+                html += `</div>`;
+            });
+
+            html += `</div></div>`;
+            return html;
+        }
+
+        function getTasksHTML() {
+            let taskList = tasks.map(t => `
+                <div class="flex justify-between items-center bg-white/95 p-3.5 rounded-2xl border-2 border-blue-100 shadow-sm transition-all ${t.completed ? 'opacity-60 grayscale-[30%]' : 'hover:border-blue-300 hover:shadow-md'}">
+                    <div class="flex gap-3 items-center flex-1">
+                        <button onclick="toggleItem('task', '${t.id}')" class="active:scale-90 transition">
+                            <i data-lucide="${t.completed ? 'check-circle-2' : 'circle'}" class="w-6 h-6 ${t.completed ? 'text-green-500' : 'text-blue-300'}"></i>
+                        </button>
+                        <div>
+                            <div class="font-bold text-sm md:text-base ${t.completed ? 'text-gray-400 line-through' : 'text-blue-900'}">${t.title}</div>
+                            <div class="text-[10px] md:text-xs font-bold flex gap-2 mt-0.5">
+                                <span class="text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md flex items-center gap-1"><i data-lucide="calendar-heart" class="w-3 h-3"></i> ${t.date.split('-').reverse().join('/')}</span>
+                                <span class="text-pink-500 bg-pink-50 px-2 py-0.5 rounded-md uppercase tracking-wider">${t.type}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="openItemModal('task', '${t.id}')" class="p-2 text-blue-300 hover:text-pink-500 hover:bg-pink-50 rounded-full transition"><i data-lucide="edit-2" class="w-5 h-5"></i></button>
+                </div>
+            `).join('') || '<p class="text-center text-blue-400 text-sm py-4 font-bold">Nenhuma missão no radar! 📡</p>';
+
+            let readList = readings.map(r => `
+                <div class="flex justify-between items-center bg-white/90 p-3 rounded-xl border-2 border-pink-100 shadow-sm ${r.completed ? 'opacity-60' : ''}">
+                    <div class="flex gap-3 items-center flex-1">
+                        <button onclick="toggleItem('reading', '${r.id}')" class="active:scale-90 transition"><i data-lucide="${r.completed ? 'check-circle-2' : 'circle'}" class="w-5 h-5 ${r.completed ? 'text-green-500' : 'text-pink-300'}"></i></button>
+                        <div>
+                            <div class="font-bold text-sm ${r.completed ? 'text-gray-400 line-through' : 'text-pink-900'}">${r.title}</div>
+                            <div class="text-[10px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-md mt-0.5 inline-block">${r.subject}</div>
+                        </div>
+                    </div>
+                    <button onclick="openItemModal('reading', '${r.id}')" class="p-2 text-pink-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('') || '<p class="text-center text-pink-400 text-sm py-2 font-bold">Sem arquivos abertos.</p>';
+
+            let studyList = extraStudies.map(s => `
+                <div class="flex justify-between items-center bg-white/90 p-3 rounded-xl border-2 border-sky-100 shadow-sm ${s.completed ? 'opacity-60' : ''}">
+                    <div class="flex gap-3 items-center flex-1">
+                        <button onclick="toggleItem('study', '${s.id}')" class="active:scale-90 transition"><i data-lucide="${s.completed ? 'check-circle-2' : 'circle'}" class="w-5 h-5 ${s.completed ? 'text-green-500' : 'text-sky-300'}"></i></button>
+                        <div class="font-bold text-sm ${s.completed ? 'text-gray-400 line-through' : 'text-sky-900'}">${s.title}</div>
+                    </div>
+                    <button onclick="openItemModal('study', '${s.id}')" class="p-2 text-sky-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('') || '<p class="text-center text-sky-400 text-sm py-2 font-bold">Sem treinos extras hoje.</p>';
+
+            return `
+            <div class="space-y-6 md:space-y-8 max-w-5xl mx-auto">
+                <!-- Seção Principal de Tarefas -->
+                <div class="bg-gradient-to-br from-blue-100 to-indigo-50 rounded-3xl p-4 md:p-6 shadow-xl border-2 border-blue-200 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none"><i data-lucide="star" class="text-blue-900 w-32 h-32 fill-current"></i></div>
+                    <div class="flex items-center justify-between mb-4 relative z-10">
+                        <h2 class="text-xl font-black text-blue-900 flex items-center gap-2">👽 Missões Intergalácticas</h2>
+                        <button onclick="openItemModal('task', null, '${getRealTodayString()}')" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1 shadow-sm active:scale-95">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Adicionar
+                        </button>
+                    </div>
+                    <div class="space-y-2.5 relative z-10">
+                        ${taskList}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Leituras -->
+                    <div class="bg-gradient-to-br from-pink-50 to-rose-50 rounded-3xl p-4 md:p-6 shadow-lg border-2 border-pink-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-black text-pink-800 flex items-center gap-2"><i data-lucide="book-open" class="text-pink-500 w-5 h-5"></i> Arquivos (Leituras)</h3>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            ${readList}
+                        </div>
+                        <button onclick="openItemModal('reading')" class="w-full py-3 border-4 border-dashed border-pink-200 text-pink-500 hover:bg-pink-100 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-95">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Novo Arquivo
+                        </button>
+                    </div>
+
+                    <!-- Treinos / Outros -->
+                    <div class="bg-gradient-to-br from-sky-50 to-cyan-50 rounded-3xl p-4 md:p-6 shadow-lg border-2 border-sky-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-black text-sky-900 flex items-center gap-2"><i data-lucide="waves" class="text-sky-500 w-5 h-5"></i> Treinamento Extra</h3>
+                        </div>
+                        <div class="space-y-2 mb-3">
+                            ${studyList}
+                        </div>
+                        <button onclick="openItemModal('study')" class="w-full py-3 border-4 border-dashed border-sky-200 text-sky-500 hover:bg-sky-100 rounded-2xl font-bold transition flex items-center justify-center gap-2 active:scale-95">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Novo Treino
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function getRoutineHTML() {
+            const todayTasks = tasks.filter(t => t.date === getRealTodayString());
+            const currentMonthStr = getRealTodayString().substring(0, 7);
+            const monthTasks = tasks.filter(t => t.date.startsWith(currentMonthStr));
+            const comp = monthTasks.filter(t => t.completed).length;
+            const tot = monthTasks.length;
+            const prog = tot === 0 ? 0 : Math.round((comp / tot) * 100);
+
+            let todayList = todayTasks.map(t => `
+                <div class="flex gap-2 items-center bg-blue-50/80 p-2.5 rounded-xl border-2 border-blue-100 mb-2">
+                    <button onclick="toggleItem('task', '${t.id}')" class="active:scale-90 transition shrink-0">
+                        <i data-lucide="${t.completed ? 'check-circle-2' : 'circle'}" class="w-5 h-5 ${t.completed ? 'text-green-500' : 'text-blue-300'}"></i>
+                    </button>
+                    <span class="text-sm font-bold truncate ${t.completed ? 'line-through text-blue-300' : 'text-blue-900'}">${t.title}</span>
+                </div>
+            `).join('') || `<div class="text-center py-4 text-blue-400 font-bold text-sm bg-blue-50/50 rounded-xl"><i data-lucide="sparkles" class="w-6 h-6 mx-auto mb-1 opacity-50"></i>Dia livre!</div>`;
+
+            const btnWorkClass = timerMode === 'work' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-105' : 'bg-blue-50 text-blue-500 hover:bg-blue-100 border-2 border-blue-100';
+            const btnBreakClass = timerMode === 'break' ? 'bg-pink-400 text-white shadow-lg shadow-pink-400/30 scale-105' : 'bg-pink-50 text-pink-500 hover:bg-pink-100 border-2 border-pink-100';
+
+            return `
+            <div class="max-w-4xl mx-auto space-y-6">
+                <!-- Painel Superior: Progresso e Hoje -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Progresso -->
+                    <div class="bg-gradient-to-br from-pink-400 to-rose-500 rounded-3xl p-6 shadow-xl border-4 border-pink-300 text-white flex flex-col justify-center relative overflow-hidden">
+                        <div class="absolute right-0 top-0 opacity-20 pointer-events-none transform translate-x-1/4 -translate-y-1/4"><i data-lucide="star" class="w-32 h-32 fill-current"></i></div>
+                        <h2 class="text-lg md:text-xl font-black flex items-center gap-2 mb-2 relative z-10">Resumo do Mês</h2>
+                        <div class="flex items-baseline gap-2 mb-2 relative z-10">
+                            <span class="text-5xl font-black drop-shadow-md">${comp}</span>
+                            <span class="text-pink-100 font-bold text-lg">/ ${tot} missões</span>
+                        </div>
+                        <div class="w-full bg-pink-900/30 rounded-full h-4 mt-2 p-1 overflow-hidden relative z-10">
+                            <div class="bg-white h-full rounded-full shadow-sm" style="width: ${prog}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Hoje -->
+                    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 border-2 border-blue-200 shadow-xl flex flex-col">
+                        <h2 class="text-sm font-black text-blue-800 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="sun" class="w-5 h-5 text-orange-400"></i> Foco de Hoje</h2>
+                        <div class="flex-1 overflow-y-auto custom-scrollbar max-h-[140px] pr-1">
+                            ${todayList}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timer -->
+                <div class="bg-white/90 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border-2 border-blue-200 flex flex-col items-center">
+                    <h2 class="text-xl md:text-2xl font-black text-blue-900 flex items-center gap-2 mb-6">Modo Foco <i data-lucide="timer" class="text-pink-500 w-6 h-6"></i></h2>
+                    
+                    <div class="flex gap-4 mb-6">
+                        <button onclick="setTimer('work')" class="px-5 py-2 rounded-xl text-sm font-black transition-all ${btnWorkClass}">Estudar (25m)</button>
+                        <button onclick="setTimer('break')" class="px-5 py-2 rounded-xl text-sm font-black transition-all ${btnBreakClass}">Pausa (5m)</button>
+                    </div>
+
+                    <div class="relative w-48 h-48 flex items-center justify-center mb-8">
+                        <div class="absolute inset-0 rounded-full border-[10px] ${timerMode === 'work' ? 'border-blue-100' : 'border-pink-100'}"></div>
+                        <svg class="absolute inset-0 w-full h-full transform -rotate-90">
+                            <circle id="timer-circle" cx="50%" cy="50%" r="46%" fill="none" stroke="${timerMode === 'work' ? '#3b82f6' : '#f472b6'}" stroke-width="10" stroke-dasharray="289%" stroke-linecap="round" class="transition-all duration-1000 ease-linear" />
+                        </svg>
+                        <span id="timer-text" class="text-5xl font-black text-blue-900 tracking-tighter">${formatTimer(timeLeft)}</span>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button onclick="toggleTimerPlay()" class="w-16 h-16 rounded-full flex items-center justify-center text-white transition-all shadow-xl active:scale-95 ${isRunning ? 'bg-red-400 hover:bg-red-500 shadow-red-400/30' : 'bg-green-400 hover:bg-green-500 shadow-green-400/30'}">
+                            <i data-lucide="${isRunning ? 'pause' : 'play'}" class="w-8 h-8 fill-current ${isRunning ? '' : 'ml-1'}"></i>
+                        </button>
+                        <button onclick="resetTimer()" class="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-100 flex items-center justify-center text-blue-500 hover:bg-blue-100 transition-all active:scale-95">
+                            <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Playlist -->
+                <div class="bg-blue-900 rounded-[2rem] p-3 shadow-xl border-4 border-pink-300">
+                    <iframe style="border-radius: 20px" src="https://open.spotify.com/embed/playlist/0vvXsWCC9xrXsKd4Zsnsnj?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                </div>
+            </div>`;
+        }
+
+        function getFinanceHTML() {
+            const inc = transactions.filter(t => t.type === 'income').reduce((a, b) => a + Number(b.amount), 0);
+            const exp = transactions.filter(t => t.type === 'expense').reduce((a, b) => a + Number(b.amount), 0);
+            const bal = inc - exp;
+
+            const expByCat = transactions.filter(t => t.type === 'expense').reduce((acc, curr) => {
+                acc[curr.category] = (acc[curr.category] || 0) + Number(curr.amount);
+                return acc;
+            }, {});
+            const sortedCat = Object.entries(expByCat).sort((a, b) => b[1] - a[1]);
+
+            let catHtml = sortedCat.length > 0 ? sortedCat.map(([cat, amt], idx) => {
+                const perc = ((amt / exp) * 100).toFixed(1);
+                const cols = ['bg-pink-400', 'bg-blue-400', 'bg-emerald-400', 'bg-yellow-400', 'bg-purple-400'];
+                return `
+                <div class="mb-3">
+                    <div class="flex justify-between text-xs md:text-sm font-bold text-emerald-900 mb-1">
+                        <span>${cat} <span class="text-emerald-500 ml-1">(${perc}%)</span></span>
+                        <span>${formatCurrency(amt)}</span>
+                    </div>
+                    <div class="w-full bg-emerald-100 rounded-full h-3 border border-emerald-200">
+                        <div class="${cols[idx % cols.length]} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${perc}%"></div>
+                    </div>
+                </div>`;
+            }).join('') : `<p class="text-center text-emerald-500 font-bold text-sm py-4"><i data-lucide="piggy-bank" class="mx-auto w-8 h-8 opacity-50 mb-2"></i>Nenhuma despesa para categorizar.</p>`;
+
+            let transHtml = transactions.length > 0 ? transactions.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => `
+                <div class="flex justify-between items-center bg-emerald-50/80 p-3 rounded-2xl border-2 border-emerald-100 group transition hover:bg-emerald-100 mb-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ${t.type === 'income' ? 'bg-emerald-200 text-emerald-700' : 'bg-red-200 text-red-600'}">
+                            <i data-lucide="${t.type === 'income' ? 'arrow-up-circle' : 'arrow-down-circle'}" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-emerald-900 leading-tight">${t.description}</div>
+                            <div class="text-[10px] text-emerald-600 font-bold mt-0.5">${t.date.split('-').reverse().join('/')} • ${t.category}</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-sm ${t.type === 'income' ? 'text-emerald-600' : 'text-red-500'}">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount)}</span>
+                        <button onclick="deleteTransaction('${t.id}')" class="text-red-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-600 p-1.5 bg-red-50 rounded-lg transition active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-center text-emerald-500 font-bold text-sm py-6">Sem movimentações recentes.</p>';
+
+            return `
+            <div class="max-w-5xl mx-auto space-y-6">
+                
+                <!-- Cards Resumo -->
+                <div class="bg-gradient-to-br from-emerald-100 to-teal-50 rounded-3xl p-5 shadow-lg border-2 border-emerald-200 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none"><i data-lucide="gem" class="w-24 h-24 text-emerald-900 fill-current"></i></div>
+                    <h2 class="text-xl font-black text-emerald-900 mb-4 flex items-center gap-2 relative z-10">💎 Tesouro Galáctico</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 relative z-10">
+                        <div class="bg-white/90 p-4 rounded-2xl shadow-sm border border-emerald-100 flex flex-col items-center justify-center">
+                            <span class="text-emerald-500 font-black text-[10px] uppercase tracking-wider mb-1">Saldo Atual</span>
+                            <span class="text-2xl font-black ${bal >= 0 ? 'text-emerald-600' : 'text-red-500'}">${formatCurrency(bal)}</span>
+                        </div>
+                        <div class="bg-white/90 p-4 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
+                            <div><span class="text-emerald-500 font-black text-[10px] uppercase tracking-wider block mb-1">Entradas</span><span class="text-lg font-black text-emerald-700">${formatCurrency(inc)}</span></div>
+                            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i data-lucide="trending-up" class="w-5 h-5"></i></div>
+                        </div>
+                        <div class="bg-white/90 p-4 rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-between">
+                            <div><span class="text-red-400 font-black text-[10px] uppercase tracking-wider block mb-1">Saídas</span><span class="text-lg font-black text-red-600">${formatCurrency(exp)}</span></div>
+                            <div class="w-10 h-10 bg-red-100 text-red-500 rounded-full flex items-center justify-center"><i data-lucide="trending-down" class="w-5 h-5"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Categorias -->
+                    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 md:p-6 shadow-xl border-2 border-emerald-200">
+                        <h3 class="text-base font-black text-emerald-900 mb-4 flex items-center gap-2"><i data-lucide="pie-chart" class="text-emerald-500 w-5 h-5"></i> Por Categoria</h3>
+                        <div class="space-y-1">${catHtml}</div>
+                    </div>
+
+                    <!-- Extrato -->
+                    <div class="bg-white/90 backdrop-blur-md rounded-3xl p-5 md:p-6 shadow-xl border-2 border-emerald-200 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-base font-black text-emerald-900 flex items-center gap-2"><i data-lucide="receipt" class="text-emerald-500 w-5 h-5"></i> Extrato</h3>
+                        </div>
+                        <div class="flex-1 overflow-y-auto max-h-[250px] custom-scrollbar pr-1 mb-4">${transHtml}</div>
+                        
+                        <button onclick="document.getElementById('transaction-modal').classList.remove('hidden')" class="w-full py-4 border-4 border-dashed border-emerald-200 bg-emerald-50/50 hover:bg-emerald-100 text-emerald-600 rounded-2xl font-black transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm mt-auto">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Nova Transação
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // --- TIMER & UI ACTIONS ---
+        window.setTimer = (mode) => {
+            timerMode = mode;
+            timeLeft = mode === 'work' ? 25 * 60 : 5 * 60;
+            isRunning = false;
+            renderApp();
+        };
+        window.toggleTimerPlay = () => { isRunning = !isRunning; renderApp(); };
+        window.resetTimer = () => {
+            isRunning = false;
+            timeLeft = timerMode === 'work' ? 25 * 60 : 5 * 60;
+            renderApp();
+        };
+        function updateTimerUI() {
+            const txt = document.getElementById('timer-text');
+            const circ = document.getElementById('timer-circle');
+            if(txt) txt.innerText = formatTimer(timeLeft);
+            if(circ) {
+                const total = timerMode === 'work' ? 25 * 60 : 5 * 60;
+                circ.style.strokeDashoffset = `${289 * (1 - timeLeft / total)}%`;
+            }
+        }
+
+        // --- FIRESTORE DATA MUTATIONS ---
+        const getBaseRef = () => `artifacts/${appId}/users/${currentUser.uid}`;
+
+        window.toggleItem = async (type, id) => {
+            if(!currentUser) return;
+            const refBase = getBaseRef();
+            try {
+                if (type === 'task') { 
+                    const t = tasks.find(x => x.id === id); 
+                    if(t) await updateDoc(doc(db, `${refBase}/tasks`, id), { completed: !t.completed }); 
+                }
+                if (type === 'reading') { 
+                    const r = readings.find(x => x.id === id); 
+                    if(r) await updateDoc(doc(db, `${refBase}/readings`, id), { completed: !r.completed }); 
+                }
+                if (type === 'study') { 
+                    const s = extraStudies.find(x => x.id === id); 
+                    if(s) await updateDoc(doc(db, `${refBase}/studies`, id), { completed: !s.completed }); 
+                }
+            } catch (err) { console.error(err); }
+        };
+
+        window.deleteTransaction = async (id) => {
+            if(!currentUser) return;
+            try {
+                await deleteDoc(doc(db, `${getBaseRef()}/transactions`, id));
+            } catch(e) { console.error(e); }
+        };
+
+        // --- MODALS CONTROL ---
+        window.closeModals = () => {
+            document.getElementById('item-modal').classList.add('hidden');
+            document.getElementById('class-modal').classList.add('hidden');
+            document.getElementById('class-details-modal').classList.add('hidden');
+            document.getElementById('transaction-modal').classList.add('hidden');
+            activeClassForDetails = null;
+        };
+
+        window.openItemModal = (type, id = null, defaultDate = '') => {
+            const modal = document.getElementById('item-modal');
+            const form = document.getElementById('item-form');
+            form.reset();
+            
+            document.getElementById('item-type').value = type;
+            document.getElementById('item-id').value = id || '';
+            document.getElementById('item-classId').value = '';
+
+            const titles = { task: 'Missão 🌺', reading: 'Arquivo 📚', study: 'Treino 🏄‍♀️' };
+            document.getElementById('item-modal-title').innerText = (id ? 'Editar ' : 'Novo ') + titles[type];
+            
+            document.getElementById('field-date').classList.toggle('hidden', type !== 'task');
+            document.getElementById('field-taskType').classList.toggle('hidden', type !== 'task');
+            document.getElementById('field-subject').classList.toggle('hidden', type !== 'reading');
+
+            const box = document.getElementById('item-modal-box');
+            box.className = `bg-white rounded-[2rem] p-6 md:p-8 w-full max-w-md shadow-2xl border-4 ${type==='task'?'border-blue-300':(type==='reading'?'border-pink-300':'border-sky-300')}`;
+            
+            const saveBtn = document.getElementById('item-save-btn');
+            saveBtn.className = `flex-[2] py-4 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-95 text-lg ${type==='task'?'bg-blue-500 hover:bg-blue-600':(type==='reading'?'bg-pink-500 hover:bg-pink-600':'bg-sky-500 hover:bg-sky-600')}`;
+
+            if (type === 'task') document.getElementById('item-date').value = defaultDate || getRealTodayString();
+
+            if (id) {
+                document.getElementById('item-delete-btn').classList.remove('hidden');
+                let item;
+                if(type === 'task') item = tasks.find(x => x.id === id);
+                if(type === 'reading') item = readings.find(x => x.id === id);
+                if(type === 'study') item = extraStudies.find(x => x.id === id);
+
+                if(item) {
+                    document.getElementById('item-title').value = item.title;
+                    if(type === 'task') {
+                        document.getElementById('item-date').value = item.date;
+                        document.getElementById('item-taskType').value = item.type;
+                        document.getElementById('item-classId').value = item.classId || '';
+                    }
+                    if(type === 'reading') document.getElementById('item-subject').value = item.subject;
+                }
+            } else {
+                document.getElementById('item-delete-btn').classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.handleItemSubmit = async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const refBase = getBaseRef();
+
+            const type = document.getElementById('item-type').value;
+            const id = document.getElementById('item-id').value;
+            const isNew = !id;
+            
+            try {
+                if (type === 'task') {
+                    const cId = document.getElementById('item-classId').value;
+                    const tData = {
+                        classId: cId ? cId : null,
+                        title: document.getElementById('item-title').value,
+                        date: document.getElementById('item-date').value,
+                        type: document.getElementById('item-taskType').value
+                    };
+                    if(isNew) {
+                        tData.completed = false;
+                        await addDoc(collection(db, `${refBase}/tasks`), tData);
+                    } else {
+                        await updateDoc(doc(db, `${refBase}/tasks`, id), tData);
+                    }
+                } else if (type === 'reading') {
+                    const rData = {
+                        title: document.getElementById('item-title').value,
+                        subject: document.getElementById('item-subject').value
+                    };
+                    if(isNew) {
+                        rData.completed = false;
+                        await addDoc(collection(db, `${refBase}/readings`), rData);
+                    } else {
+                        await updateDoc(doc(db, `${refBase}/readings`, id), rData);
+                    }
+                } else if (type === 'study') {
+                    const sData = { title: document.getElementById('item-title').value };
+                    if(isNew) {
+                        sData.completed = false;
+                        await addDoc(collection(db, `${refBase}/studies`), sData);
+                    } else {
+                        await updateDoc(doc(db, `${refBase}/studies`, id), sData);
+                    }
+                }
+                closeModals();
+            } catch (err) { console.error(err); }
+        };
+
+        window.handleItemDelete = async () => {
+            if(!currentUser) return;
+            const type = document.getElementById('item-type').value;
+            const id = document.getElementById('item-id').value;
+            const refBase = getBaseRef();
+
+            try {
+                if (type === 'task') await deleteDoc(doc(db, `${refBase}/tasks`, id));
+                if (type === 'reading') await deleteDoc(doc(db, `${refBase}/readings`, id));
+                if (type === 'study') await deleteDoc(doc(db, `${refBase}/studies`, id));
+                closeModals();
+            } catch (err) { console.error(err); }
+        };
+
+        // CLASS MODAL
+        window.openClassConfigModal = (classId = null, day = 1, shift = 'Manhã') => {
+            const modal = document.getElementById('class-modal');
+            document.getElementById('class-id').value = classId || '';
+            document.getElementById('class-day').value = day;
+            document.getElementById('class-shift').value = shift;
+            
+            document.getElementById('class-day-badge').innerText = daysOfWeekList[day];
+            document.getElementById('class-shift-badge').innerText = shift;
+
+            if (classId) {
+                document.getElementById('class-modal-title').innerText = 'Editar Aula 🌺';
+                const c = classes.find(x => x.id === classId);
+                document.getElementById('class-subject').value = c.subject;
+                document.getElementById('class-time').value = c.time || '';
+                document.getElementById('class-delete-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('class-modal-title').innerText = 'Nova Aula 🌺';
+                document.getElementById('class-subject').value = '';
+                document.getElementById('class-time').value = '';
+                document.getElementById('class-delete-btn').classList.add('hidden');
+            }
+            modal.classList.remove('hidden');
+        };
+
+        window.handleClassSubmit = async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const id = document.getElementById('class-id').value;
+            const isNew = !id;
+            
+            const classData = {
+                day: parseInt(document.getElementById('class-day').value),
+                shift: document.getElementById('class-shift').value,
+                subject: document.getElementById('class-subject').value,
+                time: document.getElementById('class-time').value
+            };
+
+            try {
+                if(isNew) {
+                    classData.links = [];
+                    classData.notes = '';
+                    await addDoc(collection(db, `${getBaseRef()}/classes`), classData);
+                } else {
+                    await updateDoc(doc(db, `${getBaseRef()}/classes`, id), classData);
+                }
+                closeModals();
+            } catch(err) { console.error(err); }
+        };
+
+        window.handleClassDelete = async () => {
+            if(!currentUser) return;
+            const id = document.getElementById('class-id').value;
+            try {
+                await deleteDoc(doc(db, `${getBaseRef()}/classes`, id));
+                closeModals();
+            } catch(err) { console.error(err); }
+        };
+
+        // CLASS DETAILS MODAL (Fichário)
+        window.openClassDetails = (classId) => {
+            const c = classes.find(x => x.id === classId);
+            if(!c) return;
+            activeClassForDetails = c;
+
+            const cTasks = tasks.filter(t => t.classId === c.id);
+            const linksHtml = (c.links || []).map((link, idx) => `
+                <div class="flex items-center justify-between bg-blue-50 border-2 border-blue-100 p-2.5 rounded-xl group hover:border-pink-300 transition-colors">
+                    <a href="${link.url}" target="_blank" rel="noreferrer" class="flex items-center gap-2 text-blue-700 text-sm font-bold hover:text-pink-500 truncate flex-1">
+                        <i data-lucide="external-link" class="w-4 h-4 shrink-0"></i><span class="truncate">${link.title}</span>
+                    </a>
+                    <button onclick="deleteLink('${c.id}', ${idx})" class="text-blue-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 p-1.5 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0 active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('') || '<p class="text-sm font-bold text-blue-400 italic">Nenhum link adicionado.</p>';
+
+            const tasksHtml = cTasks.map(t => `
+                <div class="flex items-center gap-2 bg-white border-2 border-blue-100 p-2.5 rounded-xl mb-2 shadow-sm group">
+                    <button onclick="toggleItem('task', '${t.id}')" class="shrink-0 text-blue-300 hover:text-pink-500 transition"><i data-lucide="${t.completed ? 'check-circle-2' : 'circle'}" class="w-5 h-5 ${t.completed ? 'text-green-500' : ''}"></i></button>
+                    <div class="flex-1 min-w-0">
+                        <div class="font-bold text-sm truncate ${t.completed ? 'line-through text-blue-300' : 'text-blue-900'}">${t.title.replace(c.subject + ' - ', '')}</div>
+                        <div class="text-[10px] text-blue-500 font-bold">${t.date.split('-').reverse().join('/')}</div>
+                    </div>
+                    <button onclick="deleteClassTask('${t.id}')" class="text-blue-300 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition shrink-0 active:scale-90"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </div>
+            `).join('') || '<p class="text-sm font-bold text-blue-400 italic">Tudo limpo por aqui!</p>';
+
+            const html = `
+            <div class="bg-gradient-to-r from-blue-600 to-blue-400 p-6 md:p-8 flex justify-between items-start text-white shrink-0 relative overflow-hidden">
+                <div class="absolute top-0 right-0 opacity-20 pointer-events-none"><i data-lucide="flower-2" class="-mt-8 -mr-8 w-32 h-32"></i></div>
+                <div class="relative z-10 w-full">
+                    <div class="flex justify-between items-center w-full mb-3">
+                        <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest">${daysOfWeekList[c.day]} • ${c.shift}</span>
+                        <div class="flex gap-2">
+                            <button onclick="openClassConfigModal('${c.id}', ${c.day}, '${c.shift}')" class="p-2 bg-white/20 hover:bg-white/40 rounded-full transition text-white active:scale-95"><i data-lucide="settings" class="w-4 h-4"></i></button>
+                            <button onclick="closeModals()" class="p-2 bg-white/20 hover:bg-white/40 rounded-full transition text-white active:scale-95"><i data-lucide="x" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-black mb-2">${c.subject}</h2>
+                    <div class="flex items-center gap-1.5 text-blue-50 bg-blue-900/30 w-fit px-3 py-1 rounded-lg font-bold text-xs md:text-sm"><i data-lucide="timer" class="w-4 h-4"></i> ${c.time || 'Sem horário'}</div>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-blue-50/50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-6">
+                        <!-- Links Úteis -->
+                        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border-2 border-blue-100">
+                            <h3 class="text-base font-black text-blue-900 mb-4 flex items-center gap-2 border-b-2 border-blue-50 pb-2"><i data-lucide="link-2" class="w-5 h-5 text-pink-500"></i> Links da Cadeira</h3>
+                            <div class="space-y-2 mb-4">${linksHtml}</div>
+                            <form onsubmit="addLink(event, '${c.id}')" class="flex gap-2">
+                                <input type="text" name="title" placeholder="Nome" class="flex-1 min-w-[80px] text-xs md:text-sm p-2.5 rounded-xl border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900" required>
+                                <input type="text" name="url" placeholder="URL" class="flex-[2] text-xs md:text-sm p-2.5 rounded-xl border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900" required>
+                                <button type="submit" class="bg-pink-500 hover:bg-pink-600 text-white px-3 md:px-4 rounded-xl transition active:scale-95"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                            </form>
+                        </div>
+
+                        <!-- Tarefas -->
+                        <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border-2 border-blue-100">
+                            <h3 class="text-base font-black text-blue-900 mb-4 flex items-center gap-2 border-b-2 border-blue-50 pb-2"><i data-lucide="list-todo" class="w-5 h-5 text-pink-500"></i> Missões e Provas</h3>
+                            <div class="max-h-[160px] overflow-y-auto custom-scrollbar pr-1 mb-4">${tasksHtml}</div>
+                            <form onsubmit="addClassTask(event, '${c.id}', '${c.subject}')" class="bg-blue-50 p-3 rounded-xl border-2 border-blue-100">
+                                <input type="text" name="title" placeholder="Descreva a tarefa..." required class="w-full text-xs md:text-sm p-2.5 mb-2 rounded-xl border-2 border-blue-100 outline-none focus:border-pink-400 font-bold text-blue-900">
+                                <div class="flex gap-2">
+                                    <input type="date" name="date" value="${getRealTodayString()}" required class="flex-1 text-xs md:text-sm p-2.5 rounded-xl border-2 border-blue-100 outline-none focus:border-pink-400 text-blue-600 font-bold">
+                                    <select name="type" class="flex-1 text-xs md:text-sm p-2.5 rounded-xl border-2 border-blue-100 outline-none focus:border-pink-400 text-blue-600 font-bold">
+                                        <option value="prova">Prova</option>
+                                        <option value="trabalho">Trabalho</option>
+                                        <option value="estudo">Estudo</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="w-full mt-3 bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm py-2.5 rounded-xl transition active:scale-95">Adicionar ao Calendário</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Anotações -->
+                    <div class="bg-[#FFFDF0] rounded-2xl p-5 border-2 border-yellow-200 flex flex-col min-h-[300px] shadow-sm">
+                        <h3 class="text-base font-black text-yellow-800 mb-3 flex items-center gap-2 border-b-2 border-yellow-200 pb-2 shrink-0"><i data-lucide="file-text" class="w-5 h-5 text-orange-400"></i> Anotações Rápidas</h3>
+                        <textarea onblur="updateClassNotes('${c.id}', this.value)" class="flex-1 w-full bg-transparent resize-none outline-none text-blue-900 font-bold custom-scrollbar text-sm leading-relaxed" placeholder="Anotações, senhas, dicas...">${c.notes || ''}</textarea>
+                        <p class="text-[10px] font-bold text-yellow-600 mt-2 text-right shrink-0">Salva ao sair do campo.</p>
+                    </div>
+                </div>
+            </div>`;
+
+            document.getElementById('class-details-content').innerHTML = html;
+            document.getElementById('class-details-modal').classList.remove('hidden');
+            lucide.createIcons();
+        };
+
+        window.addLink = async (e, classId) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const form = e.target;
+            const title = form.title.value;
+            let url = form.url.value;
+            if (!url.startsWith('http')) url = 'https://' + url;
+            
+            let c = classes.find(x => x.id === classId);
+            if(c) {
+                const newLinks = c.links ? [...c.links] : [];
+                newLinks.push({ id: Date.now().toString(), title, url });
+                try {
+                    await updateDoc(doc(db, `${getBaseRef()}/classes`, classId), { links: newLinks });
+                    form.reset();
+                } catch(err) { console.error(err); }
+            }
+        };
+
+        window.deleteLink = async (classId, linkIdx) => {
+            if(!currentUser) return;
+            let c = classes.find(x => x.id === classId);
+            if(c && c.links) {
+                const newLinks = [...c.links];
+                newLinks.splice(linkIdx, 1);
+                try {
+                    await updateDoc(doc(db, `${getBaseRef()}/classes`, classId), { links: newLinks });
+                } catch(err) { console.error(err); }
+            }
+        };
+
+        window.addClassTask = async (e, classId, subject) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const form = e.target;
+            
+            const taskData = {
+                classId: classId,
+                title: `${subject} - ${form.title.value}`,
+                date: form.date.value,
+                type: form.type.value,
+                completed: false
+            };
+            try {
+                await addDoc(collection(db, `${getBaseRef()}/tasks`), taskData);
+                form.reset();
+            } catch(err) { console.error(err); }
+        };
+
+        window.deleteClassTask = async (taskId) => {
+            if(!currentUser) return;
+            try {
+                await deleteDoc(doc(db, `${getBaseRef()}/tasks`, taskId));
+            } catch(err) { console.error(err); }
+        };
+
+        window.updateClassNotes = async (classId, text) => {
+            if(!currentUser) return;
+            try {
+                await updateDoc(doc(db, `${getBaseRef()}/classes`, classId), { notes: text });
+            } catch(err) { console.error(err); }
+        };
+
+        window.handleTransactionSubmit = async (e) => {
+            e.preventDefault();
+            if(!currentUser) return;
+            const form = e.target;
+            
+            const transData = {
+                type: form.type.value,
+                amount: parseFloat(form.amount.value.replace(',', '.')),
+                category: form.category.value,
+                description: form.description.value,
+                date: form.date.value
+            };
+
+            try {
+                await addDoc(collection(db, `${getBaseRef()}/transactions`), transData);
+                form.reset();
+                closeModals();
+            } catch(err) { console.error(err); }
+        };
+
+        lucide.createIcons();
+
+    </script>
+</body>
+</html>
